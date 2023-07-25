@@ -7,6 +7,9 @@ namespace testAES_EncryptionDecryption
 {
     public partial class frmMain : Form
     {
+        string unencryptedFilePath;
+        string encryptedFilePath;
+
         public frmMain()
         {
             InitializeComponent();
@@ -49,17 +52,12 @@ namespace testAES_EncryptionDecryption
 
         private void btnEncrypt_Click(object sender, EventArgs e)
         {
-            using (var openFileDialog = new OpenFileDialog())
-            {
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    string selectedFilePath = openFileDialog.FileName;
                     string password = txtPasswordEncrypt.Text;
 
                     try
                     {
-                        byte[] encryptedData = EncryptFile(selectedFilePath, password);
-                        string encryptedFilePath = selectedFilePath + ".encrypted";
+                        byte[] encryptedData = EncryptFile(unencryptedFilePath, password);
+                        string encryptedFilePath = unencryptedFilePath + ".zcryptex";
 
                         File.WriteAllBytes(encryptedFilePath, encryptedData);
 
@@ -69,8 +67,8 @@ namespace testAES_EncryptionDecryption
                     {
                         MessageBox.Show("Error encrypting the file: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
-                }
-            }
+            txtPasswordEncrypt.Clear();
+            selectedFile1.Clear();
         }
 
         private byte[] DecryptFile(string encryptedFilePath, string password)
@@ -81,7 +79,6 @@ namespace testAES_EncryptionDecryption
                 byte[] key = new byte[32];
                 byte[] iv = new byte[16];
 
-                // Generate random key and IV
                 using (Rfc2898DeriveBytes keyDerivationFunction = new Rfc2898DeriveBytes(password, iv))
                 {
                     key = keyDerivationFunction.GetBytes(32);
@@ -91,41 +88,30 @@ namespace testAES_EncryptionDecryption
                 aesAlg.Key = key;
                 aesAlg.IV = iv;
 
-                // Read the encrypted file into a byte array
                 byte[] dataToDecrypt = File.ReadAllBytes(encryptedFilePath);
 
-                // Create a memory stream to hold the decrypted data
                 using (MemoryStream msDecrypt = new MemoryStream())
                 {
                     using (ICryptoTransform decryptor = aesAlg.CreateDecryptor())
                     {
                         using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Write))
                         {
-                            // Write the decrypted data to the memory stream
                             csDecrypt.Write(dataToDecrypt, 0, dataToDecrypt.Length);
                         }
                     }
                     decryptedData = msDecrypt.ToArray();
                 }
             }
-
             return decryptedData;
         }
 
         private void btnDecrypt_Click(object sender, EventArgs e)
         {
-            using (var openFileDialog = new OpenFileDialog())
-            {
-                openFileDialog.Filter = "Encrypted Files|*.encrypted";
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    string encryptedFilePath = openFileDialog.FileName;
                     string password = txtPasswordDecrypt.Text;
-
                     try
                     {
                         byte[] decryptedData = DecryptFile(encryptedFilePath, password);
-                        string originalFilePath = encryptedFilePath.Substring(0, encryptedFilePath.LastIndexOf(".encrypted"));
+                        string originalFilePath = encryptedFilePath.Substring(0, encryptedFilePath.LastIndexOf(".zcryptex"));
 
                         File.WriteAllBytes(originalFilePath, decryptedData);
 
@@ -135,8 +121,39 @@ namespace testAES_EncryptionDecryption
                     {
                         MessageBox.Show("Error decrypting the file: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
+            txtPasswordDecrypt.Clear();
+            selectedFile2.Clear();
+        }
+
+        private void btnBrowse1_Click(object sender, EventArgs e)
+        {
+            using (var openFileDialog = new OpenFileDialog())
+            {
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    unencryptedFilePath = openFileDialog.FileName;
+                    selectedFile1.Text = unencryptedFilePath;
                 }
             }
+        }
+
+        private void btnBrowse2_Click(object sender, EventArgs e)
+        {
+            using (var openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = "Encrypted Files|*.zcryptex";
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    encryptedFilePath = openFileDialog.FileName;
+                    selectedFile2.Text = encryptedFilePath;
+
+                }
+            }
+        }
+
+        private void frmMain_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }
