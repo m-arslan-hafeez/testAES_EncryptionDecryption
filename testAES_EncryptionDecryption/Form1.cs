@@ -57,7 +57,7 @@ namespace testAES_EncryptionDecryption
                     try
                     {
                         byte[] encryptedData = EncryptFile(unencryptedFilePath, password);
-                        string encryptedFilePath = unencryptedFilePath + ".zcryptex";
+                        string encryptedFilePath = unencryptedFilePath + ".encrypted";
 
                         File.WriteAllBytes(encryptedFilePath, encryptedData);
 
@@ -111,7 +111,7 @@ namespace testAES_EncryptionDecryption
                     try
                     {
                         byte[] decryptedData = DecryptFile(encryptedFilePath, password);
-                        string originalFilePath = encryptedFilePath.Substring(0, encryptedFilePath.LastIndexOf(".zcryptex"));
+                        string originalFilePath = encryptedFilePath.Substring(0, encryptedFilePath.LastIndexOf(".encrypted"));
 
                         File.WriteAllBytes(originalFilePath, decryptedData);
 
@@ -141,7 +141,7 @@ namespace testAES_EncryptionDecryption
         {
             using (var openFileDialog = new OpenFileDialog())
             {
-                openFileDialog.Filter = "Encrypted Files|*.zcryptex";
+                openFileDialog.Filter = "Encrypted Files|*.encrypted";
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     encryptedFilePath = openFileDialog.FileName;
